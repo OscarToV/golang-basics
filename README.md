@@ -1,1 +1,1 @@
-# golang-data-structures
+# golang-basics
