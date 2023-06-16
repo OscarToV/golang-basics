@@ -8,15 +8,30 @@ type Message struct {
 }
 
 type Server struct {
-	msgch chan Message
+	msgch  chan Message
+	quitch chan struct{}
+}
+
+func gracefullQuitServer(quitch chan struct{}) {
+	close(quitch)
 }
 
 func (s *Server) startAndListen() {
+	// you can name your for loop
+running:
 	for {
+		select {
 		// block here until receive a message
-		msg := <-s.msgch
-		fmt.Printf("received message from : %s payload: %s", msg.From, msg.Payload)
+		case msg := <-s.msgch:
+			fmt.Printf("received message from : %s payload: %s", msg.From, msg.Payload)
+		case <-s.quitch:
+			fmt.Println("The server is doing a gracefull shutdow")
+			// logic for the gracefull shutdown
+			break running
+		default:
+		}
 	}
+	fmt.Println("the server is shitdown")
 }
 
 func sendMessageToServer(msgch chan Message, payload string) {
